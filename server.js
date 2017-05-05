@@ -1,38 +1,31 @@
-var http = require('http');
-var Static = require('node-static');
-var WebSocketServer = new require('ws');
+'use strict';
 
-var clients = {};
+const express = require('express');
+const SocketServer = require('ws').Server;
+const path = require('path');
 
-var webSocketServer = new WebSocketServer.Server({port: 8081});
-webSocketServer.on('connection', function(ws) {
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, 'index.html');
 
-  var id = Math.random();
-  clients[id] = ws;
-  console.log("New connection " + id);
+const app = express()
 
-  ws.on('message', function(message) {
-    console.log('New message ' + message);
+app.use(express.static('public'))
 
-    for(var key in clients) {
-      clients[key].send(message);
-    }
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html')
+})
+
+const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
+const wss = new SocketServer({ server });
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.on('close', () => console.log('Client disconnected'));
+
+  ws.on('message', (m) => {
+    wss.clients.forEach(client => {
+      client.send(m)
+    })
   });
-
-  ws.on('close', function() {
-    console.log('Connection closed ' + id);
-    delete clients[id];
-  });
-
 });
-
-
-var fileServer = new Static.Server('.');  
-http.createServer(function (req, res) {
-  
-  fileServer.serve(req, res);
-
-}).listen(8080);
-
-console.log("Server running on 8080, ws on 8081");
-
