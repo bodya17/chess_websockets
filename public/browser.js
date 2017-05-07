@@ -1,8 +1,11 @@
-var socket = new WebSocket("ws://dead-simple-chess.herokuapp.com");
-// var socket = new WebSocket("ws://localhost:3000");
+// var socket = new WebSocket("ws://dead-simple-chess.herokuapp.com");
+// // var socket = new WebSocket("ws://localhost:3000");
+
+
+var socket = io()
 
 var onChange = function(oldPos, newPos) {
-  socket.send(ChessBoard.objToFen(newPos));
+  socket.emit('newPos', ChessBoard.objToFen(newPos));
 };
 
 var cfg = {
@@ -13,6 +16,8 @@ var cfg = {
 
 var board = ChessBoard('board', cfg);
 
-socket.onmessage = function(event) {
-  board.position(event.data);
-};
+socket.on('newPos', function(newPos) {
+  board.position(newPos)
+})
+
+
