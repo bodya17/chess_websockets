@@ -1,1 +1,1 @@
-web: node socketIoServer
+web: node socketIoServer.js
