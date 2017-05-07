@@ -10,11 +10,9 @@ const app = express()
 
 app.use(express.static('public'))
 
-app.get('/', (req, res) => {
-  // res.sendFile(__dirname + '/public/index.html')
-  res.send('hi')
+app.get('/health', (req, res) => {
+  res.send('ok i am alive')
 })
-
 const server = app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const wss = new SocketServer({ server });
